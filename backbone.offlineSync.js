@@ -1,6 +1,5 @@
+define(['underscore', 'backbone'], function (_, Backbone) {
 
-(function() {
-  
   var debug = function() {
     console.log.apply(console, ['[offlineSync]'].concat(Array.prototype.slice.call(arguments)));
   };
@@ -163,7 +162,6 @@
     debug('sync', (typeof model.url =='function') ? model.url() : model.url, ':', method, model.cid, model.id, model, options);
 
     function applyOfflinePatches(backboneModel){
-      backboneModel.collection = model.collection || model;
       var record = cache.get(backboneModel);
       if (!record) return backboneModel;
       if (record.deleted) return null;
@@ -206,7 +204,9 @@
           // we've updated since the last save to the server 
           // was successful
           if (model instanceof Backbone.Model) {
-            data = applyOfflinePatches(model);
+            var copy = model.clone();
+            copy.attributes = data;
+            data = applyOfflinePatches(copy.toJSON());
           }
           options.success = success;
           if (success) success(data, response, options);
@@ -264,5 +264,4 @@
     console.log('reconciling', models);
   };
 
-}).call(this);
-
+});
